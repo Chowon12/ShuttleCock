@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.fp.shuttlecock.freeboard.FreeboardMapper">
+
+	<select id="getFreePostByFreeboardId" parameterType="_int"
+		resultType="com.fp.shuttlecock.freeboard.FreeboardDTO">
+		select * from freeboard where freeboardId =
+		#{freeboardId}
+	</select>
+	
+	<select id="get5FreePosts" resultType="com.fp.shuttlecock.freeboard.FreeboardDTO">
+		SELECT *
+		FROM freeboard
+		ORDER BY regdate DESC
+		LIMIT 5
+	</select>
+
+	<!-- 글 등록 조회수랑 좋아요수는 0으로 세팅! -->
+	<insert id="insertFreeboard"
+		parameterType="com.fp.shuttlecock.freeboard.FreeboardDTO">
+		insert into freeboard(
+		title,
+		userId,
+		content,
+		`like`,
+		`hit`,
+		imageName
+		) values (#{title},#{userId},#{content},0,0,
+		#{imageName})
+	</insert>
+
+
+	<!-- 글목록 : 페이징/검색 -->
+
+	<!-- 메인용 리스트 -->
+
+	<select id="getFreeboard"
+		resultType="com.fp.shuttlecock.freeboard.FreeboardDTO">
+		<bind name="start" value="(pageNum - 1) * countPerPage" />
+		select freeboard.*, badge.badgeName from freeboard
+		INNER JOIN user ON freeboard.userId = user.userId
+		INNER JOIN badge ON user.badgeId = badge.badgeId
+		<where>
+			(deleteYN IS NULL OR deleteYN != 1)
+			<if test="userId != null">
+				AND (freeboard.userId NOT IN (SELECT blockedUser FROM blockuser
+				WHERE blockuser.userId = #{userId}))
+			</if>
+			<choose>
+				<when
+					test="keyword != null and keyword != ''">
+					<choose>
+						<when test="condition == 'title'">
+							AND title LIKE CONCAT('%', #{keyword}, '%')
+						</when>
+						<when test="condition == 'userId'">
+							AND freeboard.userId LIKE CONCAT('%', #{keyword}, '%')
+						</when>
+						<when test="condition == 'content'">
+							AND content LIKE CONCAT('%', #{keyword}, '%')
+						</when>
+					</choose>
+				</when>
+			</choose>
+		</where>
+		<choose>
+			<when test="sort == 0">
+				ORDER BY freeboardId DESC
+			</when>
+			<when test="sort == 1">
+				ORDER BY regdate DESC
+			</when>
+			<when test="sort == 2">
+				ORDER BY hit DESC
+			</when>
+			<when test="sort == 3">
+				ORDER BY `like` DESC
+			</when>
+		</choose>
+		limit #{start} , #{countPerPage}
+
+
+	</select>
+
+	<!-- 토탈 -->
+	<select id="getTotal" resultType="int">
+		SELECT COUNT(*)
+		FROM freeboard
+		<where>
+			(deleteYN IS NULL OR deleteYN != 1)
+			<if test="userId != null">
+				AND (userId NOT IN (SELECT blockedUser FROM blockuser
+				WHERE userId = #{userId}))
+			</if>
+			<choose>
+				<when
+					test="keyword != null and keyword != ''">
+					<choose>
+						<when test="condition == 'title'">
+							AND title LIKE CONCAT('%', #{keyword}, '%')
+						</when>
+						<when test="condition == 'userId'">
+							AND userId LIKE CONCAT('%', #{keyword}, '%')
+						</when>
+						<when test="condition == 'content'">
+							AND content LIKE CONCAT('%', #{keyword}, '%')
+						</when>
+					</choose>
+				</when>
+			</choose>
+		</where>
+	</select>
+
+	<!-- 조회수 -->
+	<update id="hit">
+		update freeboard
+		set hit = hit + 1
+		where freeboardId =
+		#{freeboardId}
+	</update>
+
+	<select id="comCNT"
+		resultType="com.fp.shuttlecock.freeboard.FreeboardDTO">
+		select u.*,
+		(select count(*) from comments where bno =
+		#{bno} ) as commentCount
+		from freeboard u where freeboardId =
+		#{freeboardId};
+	</select>
+
+	<update id="updateFreePost"
+		parameterType="com.fp.shuttlecock.freeboard.FreeboardDTO">
+		update freeboard
+		set title = #{title}, content = #{content},
+		regdate = NOW(), imageName = #{imageName}
+		where freeboardId = #{freeboardId}
+	</update>
+
+	<delete id="deleteFree" parameterType="_int">
+		delete from
+		freeboard where
+		freeboardId = #{freeboardId}
+	</delete>
+
+	<update id="increaseWriteCount" parameterType="string">
+		update user
+		set
+		writeCount = writeCount + 1
+		where userId = #{userId}
+	</update>
+
+	<update id="updateDeletedFreePost" parameterType="_int">
+		update
+		freeboard set deleteYN = 1 where freeboardId = #{freeboardId}
+	</update>
+
+</mapper>

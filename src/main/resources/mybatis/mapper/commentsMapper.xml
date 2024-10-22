@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.fp.shuttlecock.comments.CommentsMapper">
+
+	<insert id="insertComment" parameterType="CommentsDTO">
+		INSERT INTO comments(commentsId, content, bno, commentType, userId, secret) 
+		values(#{commentsId}, #{content},#{bno}, #{commentType}, #{userId}, #{secret})
+	</insert>
+	
+	<update id="increaseCommentCount" parameterType="CommentsDTO">
+		<choose>
+			<when test="commentType == 2">
+				update freeboard 
+				set commentCount = commentCount + 1 
+				where freeboardId = #{bno}
+			</when>
+			<when test="commentType == 3">
+				update tradeboard 
+				set commentCount = commentCount + 1 
+				where tradeboardId = #{bno}
+			</when>
+			<when test="commentType == 4">
+				update recruitboard 
+				set commentCount = commentCount + 1 
+				where recruitboardId = #{bno}
+			</when>
+		</choose>
+	</update>
+	
+	<update id="decreaseCommentCount" parameterType="CommentsDTO">
+		<choose>
+			<when test="commentType == 2">
+				update freeboard 
+				set commentCount = commentCount - 1 
+				where freeboardId = #{bno}
+			</when>
+			<when test="commentType == 3">
+				update tradeboard 
+				set commentCount = commentCount - 1 
+				where tradeboardId = #{bno}
+			</when>
+			<when test="commentType == 4">
+				update recruitboard 
+				set commentCount = commentCount - 1 
+				where recruitboardId = #{bno}
+			</when>
+		</choose>
+	</update>
+	
+	<select id="getCommentByCommentsId" parameterType="_int" resultType="CommentsDTO">
+		select * from comments 
+		where commentsId = #{commentsId}
+	</select>
+	
+	<delete id="deleteComment" parameterType="_int">
+		delete from comments 
+		where commentsId = #{commentsId}
+	</delete>
+	
+	<update id="updateComment" parameterType="CommentsDTO">
+		update comments 
+		set content = #{content}, regdate = NOW(), secret = #{secret}
+		where commentsId = #{commentsId} 
+	</update>
+	
+	<select id="getCommentList" resultType="CommentsDTO">
+		select comments.*, badge.badgeName 
+		from comments 
+		INNER JOIN user ON user.userId = comments.userId 
+		INNER JOIN badge ON badge.badgeId = user.badgeId 
+		<where>
+			bno = #{bno} and commentType = #{commentType} and (deleteYN IS NULL OR deleteYN != 1)
+			<if test="userId != null">
+					AND (comments.userId NOT IN (SELECT blockedUser FROM blockuser
+					WHERE blockuser.userId = #{userId}))
+			</if>
+		</where>
+		order by commentsId DESC
+	</select>
+	
+	<update id="updateDeletedComment" parameterType="_int">
+		update comments set deleteYN = 1 
+		where commentsId = #{commentsId}
+	</update>
+</mapper>

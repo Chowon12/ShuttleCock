@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.fp.shuttlecock.mypage.MypageMapper">
+
+	<select id="getMypage"
+		parameterType="String"
+		resultType="com.fp.shuttlecock.user.UserDTO">
+		SELECT *
+		FROM user
+		WHERE userId = #{userId}
+	</select>
+
+	<select id="getCalendar"
+		resultType="com.fp.shuttlecock.mypage.CalendarDTO">
+		SELECT *
+		FROM calendar
+		WHERE userId = #{userId}
+	</select>
+
+	<select id="getCalendarByDate"
+		resultType="com.fp.shuttlecock.mypage.CalendarDTO">
+		SELECT *
+		FROM calendar
+		WHERE date = #{date}
+	</select>
+
+	<insert id="insertCalendar"
+		parameterType="com.fp.shuttlecock.mypage.CalendarDTO">
+		INSERT INTO calendar (title, date, userId)
+		VALUES
+		(#{title},#{date}, #{userId})
+	</insert>
+	
+	<update id="updateCalendar"
+			parameterType="com.fp.shuttlecock.mypage.CalendarDTO">
+		UPDATE calendar
+		SET title = #{title}
+		WHERE userId = #{user_userId} 
+	</update>
+	
+	<delete id="deleteCalendar" parameterType="int">
+		DELETE FROM calendar
+		WHERE calendarId = #{calendarId}
+	</delete>
+
+	<update id="updateUser"
+		parameterType="com.fp.shuttlecock.user.UserDTO">
+		UPDATE user
+		SET username = #{username},
+		userEmail =	#{userEmail}
+		WHERE userId = #{userId}
+	</update>
+
+	<delete id="deleteUser" parameterType="String">
+		DELETE FROM user
+		WHERE
+		userId = #{userId}
+	</delete>
+
+	<select id="getLeagueboard"
+		resultType="com.fp.shuttlecock.leagueboard.LeagueboardDTO">
+		SELECT *
+		FROM leagueboard
+		WHERE userId = #{userId} AND (deleteYN IS NULL OR deleteYN != 1)
+	</select>
+
+	<select id="getFreeboard"
+		resultType="com.fp.shuttlecock.freeboard.FreeboardDTO">
+		SELECT *
+		FROM freeboard
+		WHERE userId = #{userId} AND (deleteYN IS NULL OR deleteYN != 1)
+	</select>
+
+	<select id="getTradeboard"
+		resultType="TradeboardDTO">
+		SELECT *
+		FROM tradeboard
+		WHERE userId = #{userId} AND (deleteYN IS NULL OR deleteYN != 1)
+	</select>
+
+	<select id="getRecruitBoard"
+		resultType="RecruitboardDTO">
+		SELECT *
+		FROM recruitboard
+		WHERE userId = #{userId} AND (deleteYN IS NULL OR deleteYN != 1)
+	</select>
+
+	<select id="getComment"
+		resultType="com.fp.shuttlecock.comments.CommentsDTO">
+		SELECT *
+		FROM comments
+		WHERE userId = #{userId} AND (deleteYN IS NULL OR deleteYN != 1)
+	</select>
+
+	<select id="getLike"
+		parameterType="String"
+		resultType="hashmap">
+<!-- 		SELECT l.bno, l.likesType, f.title, f.regdate, t.title, t.regdate, r.title , r.regdate, i.title, i.regdate
+		FROM likes l, freeboard f, tradeboard t, recruitboard r, leagueboard i
+		WHERE l.userId = #{userId} AND l.likesType = 2 AND l.bno = f.freeboardId
+		      OR l.userId = #{userId} AND l.likesType = 3 AND l.bno = t.tradeboardId 
+		      OR l.userId = #{userId} AND l.likesType = 4 AND l.bno = r.recruitboardId
+		      OR l.userId = #{userId} AND l.likesType = 5 AND l.bno = i.leagueboardId
+		SELECT l.likesType, l.bno, r.title, r.regdate, t.title, t.regdate, f.title, f.regdate
+		FROM likes l, recruitboard r, tradeboard t, freeboard f
+		WHERE l.userId = #{userId} AND l.likesType = 4 AND l.bno = r.recruitboardId
+		   OR l.userId = #{userId} AND l.likesType = 3 AND l.bno = t.tradeboardId
+		   OR l.userId = #{userId} AND l.likesType = 2 AND l.bno = f.freeboardId -->
+	</select>
+	
+	<select id="getRecruitBoardLike"
+		resultType="RecruitboardDTO">
+		SELECT recruitboard.*
+		FROM recruitboard
+		inner JOIN likes ON recruitboard.recruitboardId = likes.bno
+		WHERE likes.userId = #{userId} AND (likes.deleteYN IS NULL OR likes.deleteYN != 1)
+	</select>
+	
+		<select id="getFreeboardLike"
+		resultType="com.fp.shuttlecock.freeboard.FreeboardDTO">
+		SELECT freeboard.*
+		FROM freeboard
+		inner JOIN likes ON freeboard.freeboardId = likes.bno
+		WHERE likes.userId = #{userId} AND (likes.deleteYN IS NULL OR likes.deleteYN != 1)
+	</select>
+	
+	<select id="getTradeboardLike"
+		resultType="TradeboardDTO">
+		SELECT tradeboard.*
+		FROM tradeboard
+		inner JOIN likes ON tradeboard.tradeboardId = likes.bno
+		WHERE likes.userId = #{userId} AND (likes.deleteYN IS NULL OR likes.deleteYN != 1)
+	</select>
+	
+<!-- 	<select id="getBoard"
+		parameterType="com.fp.shuttlecock.mypage.PageRequestDTO"
+		resultType="hashmap">
+		SELECT f.freeboardId,t.tradeboardId, t.title, t.regdate, r.recruitboardId, r.title , r.regdate, i.leagueboardId, i.title , i.regdate
+		FROM freeboard f, tradeboard t, recruitboard r, leagueboard i
+		WHERE f.userId = #{userId} OR t.userId = #{userId} OR r.userId = #{userId} OR i.userId = #{userId}
+		<bind name="start" value="(pageNum-1)*amount" />
+		LIMIT #{start}, #{amount}		
+	</select> -->
+	
+	<select id="getTotalCount" resultType="int" parameterType="com.fp.shuttlecock.mypage.PageRequestDTO">
+	    SELECT 
+	        COUNT(tb1.userId) + COUNT(rb.userId) AS total_count
+	    FROM 
+	        tradeboard AS tb1
+	    JOIN 
+	        recruitboard AS rb ON tb1.userId = rb.userId
+		<trim prefix="WHERE">
+			<if test="searchKeyword != null">
+				content LIKE CONCAT(#{searchKeyword})
+			</if>
+		</trim>
+	</select>
+	
+	<update id="insertImage"
+		parameterType="com.fp.shuttlecock.user.UserDTO">
+		UPDATE user
+		SET userImageName = #{userImageName},
+		userImagePath = #{userImagePath}
+		WHERE userId = #{userId}
+	</update>
+
+<!-- 	<resultMap id="boardList" type="com.fp.shuttlecock.mypage.TradeboardDTO" >
+		<id property="user_userId" column="userId"/>
+		<result property="title" column="title"/>
+		
+	</resultMap> -->
+</mapper>

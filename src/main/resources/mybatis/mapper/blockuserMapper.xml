@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.fp.shuttlecock.blockuser.BlockuserMapper">
+	<insert id="insertBlockuser" parameterType="BlockuserDTO">
+		insert into blockuser(userId, blockedUser) values(#{userId}, #{blockedUser})
+	</insert>
+	
+	<select id="getBlockedUserList" parameterType="com.fp.shuttlecock.tradeboard.PageRequestDTO" resultType="BlockuserDTO">
+		<bind name="start" value="(pageNum - 1) * amount" />
+		select * from blockuser 
+		<where>
+			userId = #{userId}
+			<if test="searchKeyword != null and searchKeyword != ''">
+				AND blockedUser LIKE CONCAT('%', #{searchKeyword}, '%')
+			</if>
+		</where>
+		LIMIT #{start}, #{amount}		
+	</select>
+	
+	<select id="getTotalCount" parameterType="com.fp.shuttlecock.tradeboard.PageRequestDTO" resultType="_int">
+		select count(blockedUser) from blockuser
+		<where>
+			userId = #{userId}
+			<if test="searchKeyword != null and searchKeyword != ''">
+				AND blockedUser LIKE CONCAT('%', #{searchKeyword}, '%')
+			</if>
+		</where>
+	</select>
+	
+	<delete id="deleteBlockuser" parameterType="BlockuserDTO">
+		delete from blockuser where userId = #{userId} and blockedUser = #{blockedUser}
+	</delete>
+</mapper>

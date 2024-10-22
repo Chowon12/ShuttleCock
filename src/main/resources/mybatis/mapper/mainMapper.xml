@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.fp.shuttlecock.main.MainMapper">
+	<select id="get5LeaguePosts" resultType="LeagueboardDTO">
+		SELECT *
+		FROM leagueboard
+		ORDER BY regdate DESC
+		LIMIT 5
+	</select>
+	
+	<update id="updateCommunityBadge" parameterType="com.fp.shuttlecock.user.UserDTO">
+		UPDATE user
+		SET badgeId =#{badgeId}
+		WHERE userId =#{userId}
+	</update>
+	
+	<select id="getBadgeList" parameterType="int" resultType="com.fp.shuttlecock.main.BadgeDTO">
+		SELECT *
+		FROM badge
+		WHERE badgeType =#{badgeType}
+	</select>
+	
+	<update id="updateUserLeagueGrade">
+		UPDATE user
+		INNER JOIN 
+		(
+			SELECT 
+		        userId,
+		        RANK() OVER (ORDER BY SUM(wincount - losecount) DESC) AS ranking
+		    FROM leaguerank
+		    GROUP BY userId
+		) AS userRanking ON user.userId = userRanking.userId
+		SET user.userLeagueGrade = userRanking.ranking;
+	</update>
+	
+	
+</mapper>

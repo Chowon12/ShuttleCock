@@ -1,0 +1,85 @@
+@charset "UTF-8";
+
+/* 정보 게시판 css */
+.aside {
+  width: 220px;
+  height: 100%;
+  display: flex;
+  justify-content: left;
+}
+
+.aside .menubar {
+  width: 200px;
+  height: 220px;
+  margin-top: 60px;
+  position: sticky;
+  top: 40px;
+  z-index: 100;
+}
+.aside .menubar > ul {
+  margin: 5px;
+}
+.aside .menubar > ul > li {
+  margin-bottom: 7px;
+}
+.aside .menubar > ul > li > a.list {
+  padding: 10px;
+  display: inline-block;
+  background-color: #405448;
+  width: 100%;
+  text-align: center;
+  box-sizing: border-box;
+  /* border: 2px solid #405448; */
+  color: #fff;
+  position: relative;
+  letter-spacing: 2px;
+  transition: 0.35s;
+  border-radius: 5px; 
+}
+.menubar > ul > li > a.list:hover, a.list:active {
+  /* letter-spacing: 5px; */
+  transition: 0.35s;
+  background: #fff;
+  color: #405448;
+}
+.menubar > ul > li > a.list::before {
+  top: -10px;
+}
+.menubar > ul > li > a.list::after {
+  bottom: -10px;
+}
+.menubar > ul > li > a.list::before,
+.menubar > ul > li > a.list::after {
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  border: 1px solid rgba(255, 255, 255, 0);
+  content: " ";
+  display: block;
+  margin: 0 auto;
+  position: relative;
+  transition: all 280ms ease-in-out;
+  width: 0;
+}
+.menubar > ul > li > a.list:hover::before,
+.menubar > ul > li > a.list:hover::after {
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  border-color: #405448;
+  transition: width 350ms ease-in-out;
+  width: 100%;
+}
+.menubar > ul > li > a.list:hover::before {
+  width: 100%;
+}
+.menubar > ul > li > a.list.active::before,
+.menubar > ul > li > a.list.active::after {
+  border-color: #405448; 
+  transition: none; 
+  width: 100%;
+}
+.menubar > ul > li > a.list.active {
+  background-color: #fff;
+  border-color: #405448;
+  color: #405448;
+  width: 100%;
+}
